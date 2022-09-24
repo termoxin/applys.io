@@ -17,7 +17,6 @@ let options = {};
 
   options = {
     args: [
-      ...chrome.args,
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--hide-scrollbars",
