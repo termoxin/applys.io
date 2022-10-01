@@ -1,4 +1,5 @@
 import { Page } from "puppeteer";
+import { socket } from "./applyVacancies";
 
 interface Options {
   category: string;
@@ -28,7 +29,11 @@ const getVacanciesByCategory = async (page: Page, options?: Options) => {
         `https://djinni.co/jobs/keyword-${options?.category}?page=${pageIndex}`
       );
 
-      console.log(pageIndex, "/", pages.length);
+      socket.emit("apply-log", {
+        error: false,
+        date: new Date(),
+        message: `Fetched vacancy pages ${pageIndex}/${pages.length}`,
+      });
 
       const vacanciesElements = await page
         .$$(".list-jobs__item")

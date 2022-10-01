@@ -1,6 +1,15 @@
 import { Page } from "puppeteer";
+import { Server, Socket } from "socket.io";
 
-const FREE_USER_LIMIT = 5;
+export let socket: Socket;
+
+const io = new Server(3001);
+
+io.on("connection", (io) => {
+  socket = io;
+});
+
+const FREE_USER_LIMIT = 50;
 
 const wait = () =>
   new Promise((resolve) => {
@@ -8,7 +17,7 @@ const wait = () =>
   });
 
 const applyVacancies = async (page: Page, message: string, vacancies: any) => {
-  for await (let vacancy of vacancies.slice(0, FREE_USER_LIMIT)) {
+  for await (let vacancy of vacancies.slice(20, FREE_USER_LIMIT)) {
     try {
       await wait();
 
@@ -26,9 +35,20 @@ const applyVacancies = async (page: Page, message: string, vacancies: any) => {
       await submitButton?.click();
 
       console.log(`DONE -> ${vacancy.title} applied`);
+      socket.emit("apply-log", {
+        error: false,
+        date: new Date(),
+        message: `DONE -> ${vacancy.title} applied`,
+      });
     } catch (err) {
       console.log(err);
       console.log(`${vacancy.title} application failed`);
+
+      socket.emit("apply-log", {
+        error: true,
+        date: new Date(),
+        message: `${vacancy.title} application failed`,
+      });
     }
   }
 };

@@ -40,8 +40,6 @@ export default async function handler(
 
     await page.goto("https://djinni.co");
 
-    console.log(req.body);
-
     const { category, message, sessionId } = JSON.parse(req.body);
 
     const cookies: Protocol.Network.CookieParam[] = [

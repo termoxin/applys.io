@@ -1,16 +1,36 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
-import { MutableRefObject, Ref, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
+import { LogsList } from "../components/LogsList";
+
 import styles from "../styles/Home.module.css";
+import { LogMessage } from "../types";
 
 const Home: NextPage = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [logs, setLogs] = useState<LogMessage[]>([]);
+  const [applied, setApplied] = useState<boolean>(false);
 
   const sessionIdRef = useRef<HTMLInputElement | null>(null);
   const categoryRef = useRef<HTMLInputElement | null>(null);
   const messageRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (applied) {
+      const socket = io("ws://localhost:3001", { transports: ["websocket"] });
+
+      socket.on("apply-log", (message) => {
+        setLogs((currentLogs) => [...currentLogs, message]);
+      });
+
+      return () => {
+        socket.removeListener("apply-log");
+      };
+    }
+  }, [applied]);
 
   const handleApply = async () => {
     try {
@@ -18,6 +38,7 @@ const Home: NextPage = () => {
       const category = categoryRef?.current?.value;
       const message = messageRef?.current?.value;
 
+      setApplied(true);
       setSuccess(false);
       setLoading(true);
 
@@ -82,6 +103,7 @@ const Home: NextPage = () => {
           <button disabled={loading} onClick={handleApply}>
             APPLY
           </button>
+          <LogsList logs={logs} />
         </div>
       </main>
 
