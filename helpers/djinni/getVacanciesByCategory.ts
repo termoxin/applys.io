@@ -1,11 +1,15 @@
 import { Page } from "puppeteer";
-import { socket } from "./applyVacancies";
+import { getSocket } from "../../socket";
 
 interface Options {
   category: string;
 }
 
 const getVacanciesByCategory = async (page: Page, options?: Options) => {
+  const socket = await getSocket();
+
+  if (!socket) return;
+
   let vacancies = [];
 
   await page.goto(`https://djinni.co/jobs/keyword-${options?.category}`);

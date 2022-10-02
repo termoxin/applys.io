@@ -57,9 +57,10 @@ export default async function handler(
       category,
     });
 
-    await applyVacancies(page, message, vacancies);
-
-    return res.status(200).json({ success: true });
+    if (vacancies) {
+      await applyVacancies(page, message, vacancies);
+      return res.status(200).json({ success: true });
+    }
   } catch (err) {
     console.error(err);
     return null;

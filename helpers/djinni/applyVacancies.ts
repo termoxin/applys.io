@@ -1,13 +1,6 @@
 import { Page } from "puppeteer";
 import { Server, Socket } from "socket.io";
-
-export let socket: Socket;
-
-const io = new Server(3001);
-
-io.on("connection", (io) => {
-  socket = io;
-});
+import { getSocket } from "../../socket";
 
 const FREE_USER_LIMIT = 50;
 
@@ -17,38 +10,42 @@ const wait = () =>
   });
 
 const applyVacancies = async (page: Page, message: string, vacancies: any) => {
-  for await (let vacancy of vacancies.slice(20, FREE_USER_LIMIT)) {
-    try {
-      await wait();
+  const socket = await getSocket();
 
-      await await page.goto(vacancy.url, { waitUntil: "networkidle2" });
+  if (socket) {
+    for await (let vacancy of vacancies.slice(20, FREE_USER_LIMIT)) {
+      try {
+        await wait();
 
-      const button = await page.$(".js-inbox-toggle-reply-form");
-      await button?.click();
+        await await page.goto(vacancy.url, { waitUntil: "networkidle2" });
 
-      const submitButton = await page.$("#job_apply");
+        const button = await page.$(".js-inbox-toggle-reply-form");
+        await button?.click();
 
-      await page.waitForSelector("#message", { timeout: 3000 });
+        const submitButton = await page.$("#job_apply");
 
-      await page.type("#message", message, { delay: 300 });
+        await page.waitForSelector("#message", { timeout: 3000 });
 
-      await submitButton?.click();
+        await page.type("#message", message, { delay: 300 });
 
-      console.log(`DONE -> ${vacancy.title} applied`);
-      socket.emit("apply-log", {
-        error: false,
-        date: new Date(),
-        message: `DONE -> ${vacancy.title} applied`,
-      });
-    } catch (err) {
-      console.log(err);
-      console.log(`${vacancy.title} application failed`);
+        await submitButton?.click();
 
-      socket.emit("apply-log", {
-        error: true,
-        date: new Date(),
-        message: `${vacancy.title} application failed`,
-      });
+        console.log(`DONE -> ${vacancy.title} applied`);
+        socket.emit("apply-log", {
+          error: false,
+          date: new Date(),
+          message: `DONE -> ${vacancy.title} applied`,
+        });
+      } catch (err) {
+        console.log(err);
+        console.log(`${vacancy.title} application failed`);
+
+        socket.emit("apply-log", {
+          error: true,
+          date: new Date(),
+          message: `${vacancy.title} application failed`,
+        });
+      }
     }
   }
 };
