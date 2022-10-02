@@ -1,5 +1,4 @@
 import { Page } from "puppeteer";
-import { Server, Socket } from "socket.io";
 import { getSocket } from "../../socket";
 
 const FREE_USER_LIMIT = 50;
@@ -13,7 +12,7 @@ const applyVacancies = async (page: Page, message: string, vacancies: any) => {
   const socket = await getSocket();
 
   if (socket) {
-    for await (let vacancy of vacancies.slice(20, FREE_USER_LIMIT)) {
+    for await (let vacancy of vacancies.slice(0, FREE_USER_LIMIT)) {
       try {
         await wait();
 

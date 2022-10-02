@@ -20,7 +20,9 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     if (applied) {
-      const socket = io("ws://localhost:3001", { transports: ["websocket"] });
+      const socket = io(`ws://${location.host.replace(":3000", "")}:3001`, {
+        transports: ["websocket"],
+      });
 
       socket.on("apply-log", (message) => {
         setLogs((currentLogs) => [...currentLogs, message]);
